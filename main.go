@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
-	handler "github.com/cameronbrill/brill.wtf/shortener"
+	handlerChannel "github.com/cameronbrill/brill.wtf/shortener"
 )
 
 func main() {
@@ -16,8 +17,19 @@ func main() {
 		"/yaml-godoc":     "https://godoc.org/gopkg.in/yaml.v2",
 	}
 
-	fmt.Println("Starting the server on :8080")
-	http.ListenAndServe(":8080", handler.MapHandler)
+	handler := handlerChannel.MapHandler(pathsToUrls, mux)
+	http.Handle("/", handler)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	fmt.Println("Starting the server on :" + port)
+	err := http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func defaultMux() *http.ServeMux {
