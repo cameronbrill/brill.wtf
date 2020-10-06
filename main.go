@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	handler "github.com/cameronbrill/brill.wtf/shortener"
 )
 
 func main() {
@@ -15,7 +17,7 @@ func main() {
 	}
 
 	fmt.Println("Starting the server on :8080")
-	http.ListenAndServe(":8080", MapHandler)
+	http.ListenAndServe(":8080", handler.MapHandler)
 }
 
 func defaultMux() *http.ServeMux {
