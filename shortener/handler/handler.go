@@ -4,11 +4,6 @@ import (
 	"net/http"
 )
 
-//type pathToURL struct {
-//	Path string
-//	URL  string
-//}
-
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handler {
 	handleFunc := func(res http.ResponseWriter, req *http.Request) {
 		url := pathsToUrls[req.URL.Path]
@@ -20,11 +15,3 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 	}
 	return http.HandlerFunc(handleFunc)
 }
-
-//func buildMap(pathsToURLs []pathToURL) (builtMap map[string]string) {
-//	builtMap = make(map[string]string)
-//	for _, ptu := range pathsToURLs {
-//		builtMap[ptu.Path] = ptu.URL
-//	}
-//	return
-//}
