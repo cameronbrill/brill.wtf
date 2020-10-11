@@ -4,36 +4,19 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"os"
-	"log"
 
 	handler "github.com/cameronbrill/brill.wtf/handler"
+	util "github.com/cameronbrill/brill.wtf/internal/util"
 	_ "github.com/lib/pq"
-	"github.com/joho/godotenv"
 )
-
-// use godot package to load/read the .env file and
-// return the value of the key
-func goDotEnvVariable(key string) string {
-
-	// load .env file
-	err := godotenv.Load(".env")
-  
-	if err != nil {
-	  log.Fatalf("Error loading .env file")
-	}
-  
-	return os.Getenv(key)
-  }
-
 
 func main() {
 	// Connect to database.
-	dbHost := goDotEnvVariable("DB_HOST")
-	dbPort := goDotEnvVariable("DB_PORT")
-	dbUser := goDotEnvVariable("DB_USER")
-	dbPassword := goDotEnvVariable("DB_PASSWORD")
-	dbname := goDotEnvVariable("DB_NAME")
+	dbHost := util.GetEnvVar("DB_HOST")
+	dbPort := util.GetEnvVar("DB_PORT")
+	dbUser := util.GetEnvVar("DB_USER")
+	dbPassword := util.GetEnvVar("DB_PASSWORD")
+	dbname := util.GetEnvVar("DB_NAME")
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -62,7 +45,7 @@ func main() {
 	// handle any url path
 	http.Handle("/", handler.MapHandler(pathsToUrls, mux))
 
-	port := goDotEnvVariable("PORT")
+	port := util.GetEnvVar("PORT")
 	if port == "" {
 		port = "8080"
 	}
