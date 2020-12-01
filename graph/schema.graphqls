@@ -1,0 +1,27 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type TargetLink {
+  id: ID!
+  url: String!
+  shortened: ShortLink!
+}
+
+type ShortLink {
+  id: ID!
+  endpoint: String!
+  target: TargetLink!
+}
+
+type Query {
+  links: [ShortLink!]!
+}
+
+input NewLink {
+  url: String!
+}
+
+type Mutation {
+  createLink(input: NewLink!): TargetLink!
+}
