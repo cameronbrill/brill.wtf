@@ -13,5 +13,6 @@
 - [ ] Allow custom short-links for my friends (ex. brill.wtf/minecraft)
 - [ ] Store secrets in [doppler](https://doppler.com) for easy user adoption
 - [ ] Create [air](https://github.com/cosmtrek/air) config for easy local dev
+- [ ] Add [Datadog](https://www.datadoghq.com) for logging/monitoring
 - [ ] Ads????
 - [ ] Analytics?????
