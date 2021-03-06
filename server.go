@@ -1,29 +1,41 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
+	"strconv"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/cameronbrill/brill.wtf/graph"
-	"github.com/cameronbrill/brill.wtf/graph/generated"
+	log "github.com/sirupsen/logrus"
 )
 
-const defaultPort = "8080"
+var (
+	host	 string
+	port     string
+	user     string
+	password string
+	dbname   string
+)
+
+func getEnv(key, fallback string) string {
+    if value, ok := os.LookupEnv(key); ok {
+        return value
+    }
+    return fallback
+}
+
+func initEnvVars() {
+	host = getEnv("host", "localhost")
+	user = getEnv("user", "postgres")
+	password = getEnv("password", "postgres")
+	dbname = getEnv("links", "postgres")
+	port, err := strconv.Atoi(getEnv("port", "5432"))
+	if err != nil {
+		log.Fatalf("Port %v cannot be parsed", port)
+	}
+}
+
 
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
-
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
