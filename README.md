@@ -1,7 +1,7 @@
 # brill.wtf
 
 ## Features
-- [x] Add [graphql generator](https://gqlgen.com) to speed up dev based on schemas
+
 - [x] Make designs in Figma
 - [ ] Finalize the schema before getting tons built out
 - [ ] Add [redis](https://github.com/go-redis/redis) for local short-link caching
