@@ -1,5 +1,21 @@
 # brill.wtf
 
+## Running
+
+### Locally
+
+Install links to everything checked off below.
+
+Run postgres, make sure a db named `postgres` exists.
+
+Run db_setup.sql in the `postgres` console.
+
+Run the following commands:
+```
+go mod download
+air
+```
+
 ## Features
 
 - [x] Make designs in Figma
@@ -16,6 +32,6 @@
 - [ ] Store secrets in [doppler](https://doppler.com) for easy user adoption
 - [x] Create [air](https://github.com/cosmtrek/air) config for easy local dev
 - [ ] Add [Datadog](https://www.datadoghq.com) for logging/monitoring
-- [x] Add pre-commit hooks
+- [x] Add [pre-commit](https://pre-commit.com/) hooks
 - [ ] Ads????
 - [ ] Analytics?????
