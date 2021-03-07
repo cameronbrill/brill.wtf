@@ -40,5 +40,6 @@ UPDATE links
 
 Create new short_url
 INSERT INTO links (url, short_url)
-    VALUES ("", "");
+    VALUES ("", "")
+    RETURNING id;
 */
