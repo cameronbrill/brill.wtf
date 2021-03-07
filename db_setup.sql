@@ -1,6 +1,7 @@
 /* SETUP TABLE */
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE links (
-    id uuid UNIQUE PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v1(),
     url text UNIQUE NOT NULL,
     short_url varchar (16) UNIQUE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -19,9 +20,10 @@ BEGIN
   NEW.last_accessed = NOW();
 RETURN NEW;
 END;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER set_timestamp
-    BEFORE UPDATE ON todos
+    BEFORE UPDATE ON links
     FOR EACH ROW
     EXECUTE PROCEDURE trigger_set_timestamp();
 
@@ -30,13 +32,13 @@ Get short_url by normal url:
 UPDATE links
     SET unique_visits = unique_visits + 1
     WHERE url = ""
-    RETURNING (url, short_url);
+    RETURNING url, short_url;
 
 Get url by short_url:
 UPDATE links
     SET unique_visits = unique_visits + 1
     WHERE short_url = ""
-    RETURNING (url, short_url);
+    RETURNING url, short_url;
 
 Create new short_url
 INSERT INTO links (url, short_url)
