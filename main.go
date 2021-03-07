@@ -138,9 +138,9 @@ func main() {
 	// Setup routing
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/shorturl", createShortLink).Methods("POST")
+	router.HandleFunc("/short_url", createShortLink).Methods("POST")
 	router.HandleFunc("/{short_url}", getURLGivenShortURL).Methods("GET")
-	router.HandleFunc("/getShortUrl/{url}", getShortURLGivenURL).Methods("GET")
+	router.HandleFunc("/get_short_url/{url}", getShortURLGivenURL).Methods("GET")
 
 	// Listen on port for API calls
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", API_PORT), nil))
