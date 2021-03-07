@@ -40,6 +40,12 @@ UPDATE links
     WHERE short_url = ""
     RETURNING url, short_url;
 
+Get url info by short_url:
+UPDATE links
+   SET unique_visits = unique_visits + 1
+   WHERE short_url = $1
+   RETURNING url, short_url, created_at, last_accessed, unique_visits;
+
 Create new short_url
 INSERT INTO links (url, short_url)
     VALUES ("", "")
