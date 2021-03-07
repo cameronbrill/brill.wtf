@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -73,6 +72,7 @@ type ShortURLResponse struct {
 	TinyURL               string `json:"tiny_url"`
 }
 
+/*
 type ShortURL struct {
 	ID                    int       `json:"id"`
 	NormalizedOriginalURL string    `json:"normalized_original_url"`
@@ -81,6 +81,7 @@ type ShortURL struct {
 	LastAccessed          time.Time `json:"last_accessed"`
 	TimesAccessed         int       `json:"times_accessed"`
 }
+*/
 
 func createShortLink(w http.ResponseWriter, r *http.Request) {
 	var shortURLReq ShortURLRequest
