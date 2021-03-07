@@ -1,0 +1,55 @@
+====================================================================================
+EXAMPLE
+route: /endpoint
+request:
+{
+    some: json,
+    object: {
+        abc: [
+            1,
+            2,
+            3
+        ],
+    },
+}
+response:
+{
+    some: json,
+    object: {
+        abc: [
+            1,
+            2,
+            3
+        ],
+    },
+}
+====================================================================================
+POST short url
+route: /short_url
+request:
+{
+    url: string,
+    {OPTIONAL}short_url: string,
+}
+response:
+{
+    url: string,
+    short_url: string,
+}
+====================================================================================
+GET short url
+route: /get_short_url/{url:string}
+response:
+{
+    url: string,
+    short_url: string,
+}
+====================================================================================
+GET url
+route: /{short_url:string}
+response:
+{
+    url: string,
+    short_url: string,
+}
+====================================================================================
