@@ -63,24 +63,6 @@ func setupDB() (DB *sql.DB) {
 	return DB
 }
 
-func main() {
-	// Initialize environment variables
-	initEnvVars()
-
-	// Setup database
-	DB = setupDB()
-
-	// Setup routing
-	router := mux.NewRouter().StrictSlash(true)
-
-	router.HandleFunc("/shorturl", createShortLink).Methods("POST")
-	router.HandleFunc("/{short_url}", getURLGivenShortURL).Methods("GET")
-	router.HandleFunc("/getShortUrl/{url}", getShortURLGivenURL).Methods("GET")
-
-	// Listen on port for API calls
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", API_PORT), nil))
-}
-
 type ShortURLRequest struct {
 	OriginalURL string `json:"original_url"`
 	TinyURL 	string `json:"tiny_url,omitempty"`
@@ -144,4 +126,22 @@ func getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("failed to get short_url given {url: %s} from database: %v\n", url, err)
 	}
+}
+
+func main() {
+	// Initialize environment variables
+	initEnvVars()
+
+	// Setup database
+	DB = setupDB()
+
+	// Setup routing
+	router := mux.NewRouter().StrictSlash(true)
+
+	router.HandleFunc("/shorturl", createShortLink).Methods("POST")
+	router.HandleFunc("/{short_url}", getURLGivenShortURL).Methods("GET")
+	router.HandleFunc("/getShortUrl/{url}", getShortURLGivenURL).Methods("GET")
+
+	// Listen on port for API calls
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", API_PORT), nil))
 }
