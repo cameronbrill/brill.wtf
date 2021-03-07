@@ -3,6 +3,8 @@ module github.com/cameronbrill/brill.wtf
 go 1.15
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/fzipp/gocyclo v0.3.1 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/lib/pq v1.9.0
 	github.com/magefile/mage v1.11.0 // indirect
