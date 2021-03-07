@@ -1,0 +1,3 @@
+setup:
+  project: brill-wtf
+  config: dev

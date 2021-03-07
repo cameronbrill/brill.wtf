@@ -13,7 +13,7 @@ Run db_setup.sql in the `postgres` console.
 Run the following commands:
 ```
 go mod download
-air
+doppler run -- air
 ```
 
 ## Features
@@ -29,7 +29,7 @@ air
 - [ ] Create a frontend for submitting links
 - [x] Allow custom short-links for my friends (ex. brill.wtf/minecraft)
 - [ ] Auto generate short-links with a hash function (ex. brill.wtf/fhad-4jj)
-- [ ] Store secrets in [doppler](https://doppler.com) for easy user adoption
+- [x] Store secrets in [doppler](https://doppler.com) for easy user adoption
 - [x] Create [air](https://github.com/cosmtrek/air) config for easy local dev
 - [ ] Add [Datadog](https://www.datadoghq.com) for logging/monitoring
 - [x] Add [pre-commit](https://pre-commit.com/) hooks
