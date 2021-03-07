@@ -29,7 +29,7 @@ doppler run -- air
 - [ ] Create a frontend for submitting links
 - [x] Allow custom short-links for my friends (ex. brill.wtf/minecraft)
 - [ ] Auto generate short-links with a hash function (ex. brill.wtf/fhad-4jj)
-- [ ] Generate 6-letter readable short-links with a word bank (ex. brill.wtf/potato)
+- [ ] Generate 6-letter readable short-links with a [word bank](https://github.com/dwyl/english-words) (ex. brill.wtf/potato)
 - [x] Store secrets in [doppler](https://doppler.com) for easy user adoption
 - [x] Create [air](https://github.com/cosmtrek/air) config for easy local dev
 - [ ] Add [Datadog](https://www.datadoghq.com) for logging/monitoring
