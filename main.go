@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -73,16 +74,13 @@ type ShortURLResponse struct {
 	ShortURL string `json:"short_url"`
 }
 
-/*
 type ShortURL struct {
-	ID                    int       `json:"id"`
-	NormalizedOriginalURL string    `json:"normalized_original_url"`
-	TinyURL               string    `json:"tiny_url"`
-	CreatedAt             time.Time `json:"created_at"`
-	LastAccessed          time.Time `json:"last_accessed"`
-	TimesAccessed         int       `json:"times_accessed"`
+	URL          string    `json:"url"`
+	ShortURL     string    `json:"short_url"`
+	CreatedAt    time.Time `json:"created_at"`
+	LastAccessed time.Time `json:"last_accessed"`
+	UniqueVisits int       `json:"unique_visits"`
 }
-*/
 
 func createShortLink(w http.ResponseWriter, r *http.Request) {
 	var shortURLReq ShortURLRequest
@@ -118,6 +116,33 @@ func getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	err := DB.QueryRow(
 		"UPDATE links SET unique_visits = unique_visits + 1 WHERE short_url = $1 RETURNING url, short_url;",
 		shortLink).Scan(&shortURL.URL, &shortURL.ShortURL)
+	if err != nil {
+		log.Fatalf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	// build response
+	log.Infof("marshalling shortURL into json: %+v", &shortURL)
+	response, err := json.Marshal(&shortURL)
+	if err != nil {
+		log.Fatalf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	http.Redirect(w, r, shortURL.URL, http.StatusMovedPermanently)
+}
+
+func getURLInfoGivenShortURL(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	shortLink := vars["short_url"]
+
+	log.Infof("getting url given short_url: {short_url: %s}", shortLink)
+	var shortURL ShortURL
+
+	// query db
+	err := DB.QueryRow(
+		"UPDATE links SET unique_visits = unique_visits + 1 WHERE short_url = $1 RETURNING url, short_url, created_at, last_accessed, unique_visits;",
+		shortLink).Scan(&shortURL.URL, &shortURL.ShortURL, &shortURL.CreatedAt, &shortURL.LastAccessed, &shortURL.UniqueVisits)
 	if err != nil {
 		log.Fatalf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -185,6 +210,7 @@ func main() {
 
 	router.HandleFunc("/short_url", createShortLink).Methods("POST")
 	router.HandleFunc("/get_short_url", getShortURLGivenURL).Methods("GET").Queries("url", "{url}")
+	router.HandleFunc("/url_info/{short_url}", getURLInfoGivenShortURL).Methods("GET")
 	router.HandleFunc("/{short_url}", getURLGivenShortURL).Methods("GET")
 
 	http.Handle("/", router)
