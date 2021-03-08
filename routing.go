@@ -16,10 +16,15 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Infof("body: %+v", r.Body)
 	log.Infof("creating short_url: {url: %v}{short_url: %v}", shortURLReq.URL, shortURLReq.ShortURL)
-	defer r.Body.Close()
+	defer func() {
+		err := r.Body.Close()
+		if err != nil {
+			log.Fatalf("issue closing request body in createShortLink: %v", err)
+		}
+	}()
 
+	// insert into postgres
 	var id string
-
 	err := a.DB.QueryRow(
 		"INSERT INTO links(url, short_url) VALUES($1, $2) RETURNING id",
 		shortURLReq.URL, shortURLReq.ShortURL).Scan(&id)
@@ -28,11 +33,22 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 		log.Fatalf("failed to upload link to database: %v\n", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	// insert into redis
+	a.RDB.Set(a.ctx, shortURLReq.URL, shortURLReq.ShortURL, 0)
 }
 
 func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	shortLink := vars["short_url"]
+
+	// search redis for short_url
+	log.Infof("searching redis for short_url: {short_url: %s}", shortLink)
+	url := a.RDB.Get(a.ctx, shortLink)
+	if url.Err() == nil {
+		log.Infof("url found in redis for short_url, redirecting: {url: %s}{short_url: %s}", url.Val(), shortLink)
+		http.Redirect(w, r, url.Val(), http.StatusMovedPermanently)
+	}
 
 	log.Infof("getting url given short_url: {short_url: %s}", shortLink)
 	var shortURL ShortURL
@@ -54,6 +70,14 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
+	// set short_url in redis
+	err = a.RDB.Set(a.ctx, shortURL.ShortURL, shortURL.URL, 0).Err()
+	if err != nil {
+		log.Fatalf("failed to set short_url:url in redis: {short_url: %s} {url: %s}", shortURL.ShortURL, shortURL.URL)
+	}
+
+	// redirect user to url
+	log.Infof("url found in postgres for short_url, redirecting: {url: %s}{short_url: %s}", shortURL.URL, shortURL.ShortURL)
 	http.Redirect(w, r, shortURL.URL, http.StatusMovedPermanently)
 }
 

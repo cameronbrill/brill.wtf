@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
@@ -14,15 +16,20 @@ import (
 type App struct {
 	Router *mux.Router
 	DB     *sql.DB
+	RDB    *redis.Client
+	ctx    context.Context
 }
 
 var (
-	DB_HOST     string
-	DB_PORT     int
-	DB_USER     string
-	DB_PASSWORD string
-	DB_NAME     string
-	API_PORT    int
+	DB_HOST        string
+	DB_PORT        int
+	DB_USER        string
+	DB_PASSWORD    string
+	DB_NAME        string
+	REDIS_PORT     int
+	REDIS_HOST     string
+	REDIS_PASSWORD string
+	API_PORT       int
 )
 
 func getEnv(key, fallback string) string {
@@ -40,6 +47,12 @@ func (a *App) initEnvVars() {
 	DB_PASSWORD = getEnv("DB_PASSWORD", "postgres")
 	DB_NAME = getEnv("DB_NAME", "postgres")
 	DB_PORT, err = strconv.Atoi(getEnv("DB_PORT", "5432"))
+	if err != nil {
+		log.Fatalf("port %v cannot be parsed\n", DB_PORT)
+	}
+	REDIS_HOST = getEnv("REDIS_HOST", "localhost")
+	REDIS_PASSWORD = getEnv("REDIS_PASSWORD", "")
+	REDIS_PORT, err = strconv.Atoi(getEnv("REDIS_PORT", "6379"))
 	if err != nil {
 		log.Fatalf("port %v cannot be parsed\n", DB_PORT)
 	}
@@ -66,6 +79,14 @@ func (a *App) setupDB() {
 	}
 }
 
+func (a *App) setupRedisClient() {
+	a.RDB = redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", REDIS_HOST, REDIS_PORT),
+		Password: REDIS_PASSWORD, // no password set
+		DB:       0,              // use default DB
+	})
+}
+
 func (a *App) setupRouter() {
 	log.Infof("setting up router")
 	a.Router = mux.NewRouter().StrictSlash(true)
@@ -82,6 +103,7 @@ func (a *App) SetupApp() {
 	a.initEnvVars()
 	a.setupDB()
 	a.setupRouter()
+	a.setupRedisClient()
 }
 
 func (a *App) Run() {
