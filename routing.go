@@ -2,19 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
 func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
+	log.Infof("entering createShortLink handler...")
 	var shortURLReq ShortURL
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&shortURLReq); err != nil {
 		log.Fatalf("invalid request: %+v\nerr:%+v\n", r, err)
 		return
 	}
-	log.Infof("body: %+v", r.Body)
 	log.Infof("creating short_url: {url: %v}{short_url: %v}", shortURLReq.URL, shortURLReq.ShortURL)
 	defer func() {
 		err := r.Body.Close()
@@ -25,41 +26,54 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 
 	// insert into postgres
 	var id string
+	log.Infof("inserting url with short_url into postgres: {url: %s}{short_url: %s}", shortURLReq.URL, shortURLReq.ShortURL)
 	err := a.DB.QueryRow(
 		"INSERT INTO links(url, short_url) VALUES($1, $2) RETURNING id",
 		shortURLReq.URL, shortURLReq.ShortURL).Scan(&id)
-
 	if err != nil {
 		log.Fatalf("failed to upload link to database: %v\n", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	// insert into redis
-	a.RDB.Set(a.ctx, shortURLReq.URL, shortURLReq.ShortURL, 0)
+	ctx := r.Context()
+	log.Infof("setting short_url to url in redis: {short_url: %s} {url: %s}", shortURLReq.ShortURL, shortURLReq.URL)
+	err = a.RDB.Set(ctx, shortURLReq.ShortURL, shortURLReq.URL, 0).Err()
+	if err != nil {
+		log.Fatalf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURLReq.ShortURL, shortURLReq.URL, err)
+	}
 }
 
 func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
+	log.Infof("entering getURLGivenShortURL handler...")
 	vars := mux.Vars(r)
 	shortLink := vars["short_url"]
 
 	// search redis for short_url
 	log.Infof("searching redis for short_url: {short_url: %s}", shortLink)
-	url := a.RDB.Get(a.ctx, shortLink)
-	if url.Err() == nil {
-		log.Infof("url found in redis for short_url, redirecting: {url: %s}{short_url: %s}", url.Val(), shortLink)
-		http.Redirect(w, r, url.Val(), http.StatusMovedPermanently)
+	ctx := r.Context()
+	val, err := a.RDB.Get(ctx, shortLink).Result()
+	if err == redis.Nil {
+		log.Infof("short_url not found in redis: {short_url: %s}", shortLink)
+	} else if err != nil {
+		log.Infof("error searching for short_url in redis: {short_url: %s} {error: %v}", shortLink, err)
+	} else {
+		log.Infof("url found in redis for short_url, redirecting: {url: %s}{short_url: %s}", val, shortLink)
+		http.Redirect(w, r, val, http.StatusMovedPermanently)
+		return
 	}
 
-	log.Infof("getting url given short_url: {short_url: %s}", shortLink)
 	var shortURL ShortURL
 
 	// query db
-	err := a.DB.QueryRow(
+	log.Infof("querying url given short_url from postgres: {short_url: %s}", shortLink)
+	err = a.DB.QueryRow(
 		"UPDATE links SET unique_visits = unique_visits + 1 WHERE short_url = $1 RETURNING url, short_url;",
 		shortLink).Scan(&shortURL.URL, &shortURL.ShortURL)
 	if err != nil {
 		log.Fatalf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// build response
@@ -68,12 +82,14 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	// set short_url in redis
-	err = a.RDB.Set(a.ctx, shortURL.ShortURL, shortURL.URL, 0).Err()
+	log.Infof("setting short_url to url in redis: {short_url: %s} {url: %s}", shortURL.ShortURL, shortURL.URL)
+	err = a.RDB.Set(ctx, shortURL.ShortURL, shortURL.URL, 0).Err()
 	if err != nil {
-		log.Fatalf("failed to set short_url:url in redis: {short_url: %s} {url: %s}", shortURL.ShortURL, shortURL.URL)
+		log.Fatalf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURL.ShortURL, shortURL.URL, err)
 	}
 
 	// redirect user to url

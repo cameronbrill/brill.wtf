@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"github.com/go-redis/redis/v8"
@@ -17,7 +16,6 @@ type App struct {
 	Router *mux.Router
 	DB     *sql.DB
 	RDB    *redis.Client
-	ctx    context.Context
 }
 
 var (
@@ -80,6 +78,7 @@ func (a *App) setupDB() {
 }
 
 func (a *App) setupRedisClient() {
+	log.Infof("connecting to redis")
 	a.RDB = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", REDIS_HOST, REDIS_PORT),
 		Password: REDIS_PASSWORD, // no password set
