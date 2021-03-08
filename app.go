@@ -90,6 +90,7 @@ func (a *App) setupRouter() {
 	log.Infof("setting up router")
 	a.Router = mux.NewRouter().StrictSlash(true)
 
+	a.Router.HandleFunc("/", a.baseHandler)
 	a.Router.HandleFunc("/short_url", a.createShortLink).Methods("POST")
 	a.Router.HandleFunc("/get_short_url", a.getShortURLGivenURL).Methods("GET").Queries("url", "{url}")
 	a.Router.HandleFunc("/url_info/{short_url}", a.getURLInfoGivenShortURL).Methods("GET")

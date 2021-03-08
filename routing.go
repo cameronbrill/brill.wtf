@@ -159,3 +159,8 @@ func (a *App) getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+func (a *App) baseHandler(w http.ResponseWriter, r *http.Request) {
+	// redirect user to my site
+	log.Infof("user hit root route, redirecting to https://cameronbrill.me")
+	http.Redirect(w, r, "https://cameronbrill.me", http.StatusMovedPermanently)
+}
