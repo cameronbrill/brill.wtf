@@ -43,7 +43,7 @@ UPDATE links
 Get url info by short_url:
 UPDATE links
    SET unique_visits = unique_visits + 1
-   WHERE short_url = $1
+   WHERE short_url = ""
    RETURNING url, short_url, created_at, last_accessed, unique_visits;
 
 Create new short_url
