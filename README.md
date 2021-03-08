@@ -20,13 +20,14 @@ doppler run -- air
 
 - [x] Make designs in Figma
 - [x] Finalize the schema before getting tons built out
-- [ ] Add [redis](https://github.com/go-redis/redis) for local short-link caching
+- [x] Add [redis](https://github.com/go-redis/redis) for local short-link caching
 - [x] Add [postgres](https://github.com/lib/pq) to store everything
 - [ ] IP rate limiting
 - [ ] Create makefile for build/local running configs
 - [ ] Create [docker compose](https://docs.docker.com/compose/) setup for local dev
 - [ ] Setup kubernetes config and deploy to [GKE](https://cloud.google.com/kubernetes-engine)
 - [ ] Create a frontend for submitting links
+- [x] [Normalize](https://github.com/PuerkitoBio/purell) urls so you don't get repeats
 - [x] Allow custom short-links for my friends (ex. brill.wtf/minecraft)
 - [ ] Auto generate short-links with a hash function (ex. brill.wtf/fhad-4jj)
 - [ ] Generate 6-letter readable short-links with a [word bank](https://github.com/dwyl/english-words) (ex. brill.wtf/potato)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/PuerkitoBio/purell"
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -11,23 +12,31 @@ import (
 func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	log.Infof("entering createShortLink handler...")
 	var shortURLReq ShortURL
+	var err error
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&shortURLReq); err != nil {
+	if err = decoder.Decode(&shortURLReq); err != nil {
 		log.Fatalf("invalid request: %+v\nerr:%+v\n", r, err)
 		return
 	}
 	log.Infof("creating short_url: {url: %v}{short_url: %v}", shortURLReq.URL, shortURLReq.ShortURL)
 	defer func() {
-		err := r.Body.Close()
+		err = r.Body.Close()
 		if err != nil {
 			log.Fatalf("issue closing request body in createShortLink: %v", err)
 		}
 	}()
 
+	// normalize url for insert
+	shortURLReq.URL, err = purell.NormalizeURLString(shortURLReq.URL, purell.FlagsUsuallySafeNonGreedy)
+	if err != nil {
+		log.Fatalf("error normalizing url: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
 	// insert into postgres
 	var id string
 	log.Infof("inserting url with short_url into postgres: {url: %s}{short_url: %s}", shortURLReq.URL, shortURLReq.ShortURL)
-	err := a.DB.QueryRow(
+	err = a.DB.QueryRow(
 		"INSERT INTO links(url, short_url) VALUES($1, $2) RETURNING id",
 		shortURLReq.URL, shortURLReq.ShortURL).Scan(&id)
 	if err != nil {
@@ -41,6 +50,19 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	err = a.RDB.Set(ctx, shortURLReq.ShortURL, shortURLReq.URL, 0).Err()
 	if err != nil {
 		log.Fatalf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURLReq.ShortURL, shortURLReq.URL, err)
+	}
+
+	// send back success response
+	response, err := json.Marshal(shortURLReq)
+	if err != nil {
+		log.Fatalf("error marshalling response object: {err: %v}", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	status, err := w.Write(response)
+	if err != nil {
+		http.Error(w, err.Error(), status)
 	}
 }
 
@@ -98,6 +120,7 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) getURLInfoGivenShortURL(w http.ResponseWriter, r *http.Request) {
+	log.Infof("entering getURLInfoGivenShortURL handler...")
 	vars := mux.Vars(r)
 	shortLink := vars["short_url"]
 
@@ -130,12 +153,20 @@ func (a *App) getURLInfoGivenShortURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
+	log.Infof("entering getShortURLGivenURL handler...")
+	var err error
 	url := r.URL.Query().Get("url")
+	// normalize url for insert
+	url, err = purell.NormalizeURLString(url, purell.FlagsUsuallySafeNonGreedy)
+	if err != nil {
+		log.Fatalf("error normalizing url: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
 
 	log.Infof("getting short_url given url: {url: %s}", url)
 	var shortURL ShortURL
 
-	err := a.DB.QueryRow(
+	err = a.DB.QueryRow(
 		"UPDATE links SET unique_visits = unique_visits + 1 WHERE url = $1 RETURNING url, short_url;",
 		url).Scan(&shortURL.URL, &shortURL.ShortURL)
 	if err != nil {
@@ -159,6 +190,7 @@ func (a *App) getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
 func (a *App) baseHandler(w http.ResponseWriter, r *http.Request) {
 	// redirect user to my site
 	log.Infof("user hit root route, redirecting to https://cameronbrill.me")
