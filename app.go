@@ -3,13 +3,14 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
+	"os"
+	"strconv"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"os"
-	"strconv"
 )
 
 type App struct {
