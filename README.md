@@ -25,7 +25,7 @@ doppler run -- air
 - [ ] IP rate limiting
 - [ ] Create makefile for build/local running configs
 - [ ] Create [docker compose](https://docs.docker.com/compose/) setup for local dev
-- [ ] Setup kubernetes config and deploy to [GKE](https://cloud.google.com/kubernetes-engine)
+<strike> - [ ] Setup kubernetes config and deploy to [GKE](https://cloud.google.com/kubernetes-engine)</strike>
 - [ ] Create a frontend for submitting links
 - [x] [Normalize](https://github.com/PuerkitoBio/purell) urls so you don't get repeats
 - [x] Allow custom short-links for my friends (ex. brill.wtf/minecraft)
@@ -35,5 +35,6 @@ doppler run -- air
 - [x] Create [air](https://github.com/cosmtrek/air) config for easy local dev
 - [ ] Add [Datadog](https://www.datadoghq.com) for logging/monitoring
 - [x] Add [pre-commit](https://pre-commit.com/) hooks
+- [x] Migrate to [heroku](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml#run-defining-the-processes-to-run)
 - [ ] Ads????
 - [ ] Analytics?????

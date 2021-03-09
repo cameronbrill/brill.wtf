@@ -1,0 +1,6 @@
+setup:
+  addons:
+    - plan: heroku-postgresql:hobby-dev
+      as: DATABASE_URL
+    - plan: heroku-redis:hobby-dev
+      as: REDIS
