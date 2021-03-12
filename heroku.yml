@@ -4,9 +4,3 @@ setup:
       as: DATABASE_URL
     - plan: heroku-redis:hobby-dev
       as: REDIS
-build:
-  languages:
-    - go
-
-run:
-  web: brillwtf
