@@ -41,7 +41,7 @@ func getEnv(key, fallback string) string {
 func (a *App) initEnvVars() {
 	log.Infof("initializing environment variables")
 	var err error
-	DB_HOST = getEnv("DB_HOST", "localhost")
+	DB_HOST = getEnv("DB_HOST", "127.0.0.1")
 	DB_USER = getEnv("DB_USER", "postgres")
 	DB_PASSWORD = getEnv("DB_PASSWORD", "postgres")
 	DB_NAME = getEnv("DB_NAME", "postgres")
