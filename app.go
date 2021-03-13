@@ -103,6 +103,8 @@ func (a *App) setupRouter() {
 	a.Router.HandleFunc("/url_info/{short_url}", a.getURLInfoGivenShortURL).Methods("GET")
 	a.Router.HandleFunc("/{short_url}", a.getURLGivenShortURL).Methods("GET")
 
+	a.Router.Use(suffixMiddleware)
+
 	http.Handle("/", a.Router)
 }
 
