@@ -20,12 +20,12 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Infof("creating short_url: {url: %v}{short_url: %v}", shortURLReq.URL, shortURLReq.ShortURL)
-	defer func() {
-		err = r.Body.Close()
-		if err != nil {
-			log.Fatalf("issue closing request body in createShortLink: %v", err)
-		}
-	}()
+	//defer func() {
+	//	err = r.Body.Close()
+	//	if err != nil {
+	//		log.Fatalf("issue closing request body in createShortLink: %v", err)
+	//	}
+	//}()
 
 	// normalize url for insert
 	shortURLReq.URL, err = purell.NormalizeURLString(shortURLReq.URL, purell.FlagsUsuallySafeNonGreedy)
