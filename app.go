@@ -28,7 +28,7 @@ var (
 	REDIS_PORT     int
 	REDIS_HOST     string
 	REDIS_PASSWORD string
-	API_PORT       int
+	PORT           int
 	SSL_MODE       string
 )
 
@@ -56,9 +56,9 @@ func (a *App) initEnvVars() {
 	if err != nil {
 		log.Fatalf("port %v cannot be parsed\n", DB_PORT)
 	}
-	API_PORT, err = strconv.Atoi(getEnv("API_PORT", "8080"))
+	PORT, err = strconv.Atoi(getEnv("PORT", "8080"))
 	if err != nil {
-		log.Fatalf("port %v cannot be parsed\n", API_PORT)
+		log.Fatalf("port %v cannot be parsed\n", PORT)
 	}
 	if getEnv("IS_HEROKU", "") != "" {
 		SSL_MODE = "require"
@@ -115,6 +115,6 @@ func (a *App) SetupApp() {
 
 func (a *App) Run() {
 	// Listen on port for API calls
-	log.Infof("starting api server on port:%d...", API_PORT)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", API_PORT), a.Router))
+	log.Infof("starting api server on port:%d...", PORT)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", PORT), a.Router))
 }
