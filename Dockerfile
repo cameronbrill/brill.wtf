@@ -1,12 +1,9 @@
 FROM golang:1.15 as builder
 
-# Install doppler cli for secret management
-RUN (curl -Ls https://cli.doppler.com/install.sh || wget -qO- https://cli.doppler.com/install.sh) | sh
-
 # Copy local code to the container image.
 WORKDIR /app
 COPY . .
-
+t p
 # Build the command inside the container.
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o brillwtf
 
@@ -19,5 +16,4 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/brillwtf /brillwtf
 
 # Run the web service on container startup.
-ENTRYPOINT ["doppler", "run",  "--"]
 CMD ["/brillwtf"]
