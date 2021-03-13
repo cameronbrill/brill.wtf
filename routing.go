@@ -146,6 +146,9 @@ func (a *App) getURLInfoGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	// build response
@@ -154,6 +157,9 @@ func (a *App) getURLInfoGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
