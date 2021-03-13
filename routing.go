@@ -16,24 +16,22 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	var err error
 	decoder := json.NewDecoder(r.Body)
 	if err = decoder.Decode(&shortURLReq); err != nil {
-		log.Fatalf("invalid request: %+v\nerr:%+v\n", r, err)
+		log.Warnf("invalid request: %+v\nerr:%+v\n", r, err)
 		return
 	}
 	log.Infof("creating short_url: {url: %v}{short_url: %v}", shortURLReq.URL, shortURLReq.ShortURL)
 	defer func() {
 		err = r.Body.Close()
 		if err != nil {
-			log.Fatalf("issue closing request body in createShortLink: %v", err)
+			log.Warnf("issue closing request body in createShortLink: %v", err)
 		}
 	}()
 
 	// normalize url for insert
 	shortURLReq.URL, err = purell.NormalizeURLString(shortURLReq.URL, purell.FlagsUsuallySafeNonGreedy)
 	if err != nil {
-		log.Fatalf("error normalizing url: %v", err)
+		log.Warnf("error normalizing url: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -44,7 +42,7 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 		"INSERT INTO links(url, short_url) VALUES($1, $2) RETURNING id",
 		shortURLReq.URL, shortURLReq.ShortURL).Scan(&id)
 	if err != nil {
-		log.Fatalf("failed to upload link to database: %v\n", err)
+		log.Warnf("failed to upload link to database: %v\n", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -53,16 +51,14 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	log.Infof("setting short_url to url in redis: {short_url: %s} {url: %s}", shortURLReq.ShortURL, shortURLReq.URL)
 	err = a.RDB.Set(ctx, shortURLReq.ShortURL, shortURLReq.URL, 0).Err()
 	if err != nil {
-		log.Fatalf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURLReq.ShortURL, shortURLReq.URL, err)
+		log.Warnf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURLReq.ShortURL, shortURLReq.URL, err)
 	}
 
 	// send back success response
 	response, err := json.Marshal(shortURLReq)
 	if err != nil {
-		log.Fatalf("error marshalling response object: {err: %v}", err)
+		log.Warnf("error marshalling response object: {err: %v}", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -101,10 +97,8 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 		"UPDATE links SET unique_visits = unique_visits + 1 WHERE short_url = $1 RETURNING url, short_url;",
 		shortLink).Scan(&shortURL.URL, &shortURL.ShortURL)
 	if err != nil {
-		log.Fatalf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
+		log.Warnf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -112,10 +106,8 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	log.Infof("marshalling shortURL into json: %+v", &shortURL)
 	response, err := json.Marshal(&shortURL)
 	if err != nil {
-		log.Fatalf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
+		log.Warnf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -123,7 +115,7 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	log.Infof("setting short_url to url in redis: {short_url: %s} {url: %s}", shortURL.ShortURL, shortURL.URL)
 	err = a.RDB.Set(ctx, shortURL.ShortURL, shortURL.URL, 0).Err()
 	if err != nil {
-		log.Fatalf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURL.ShortURL, shortURL.URL, err)
+		log.Warnf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURL.ShortURL, shortURL.URL, err)
 	}
 
 	// redirect user to url
@@ -144,10 +136,8 @@ func (a *App) getURLInfoGivenShortURL(w http.ResponseWriter, r *http.Request) {
 		"UPDATE links SET unique_visits = unique_visits + 1 WHERE short_url = $1 RETURNING url, short_url, created_at, last_accessed, unique_visits;",
 		shortLink).Scan(&shortURL.URL, &shortURL.ShortURL, &shortURL.CreatedAt, &shortURL.LastAccessed, &shortURL.UniqueVisits)
 	if err != nil {
-		log.Fatalf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
+		log.Warnf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -155,10 +145,8 @@ func (a *App) getURLInfoGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	log.Infof("marshalling shortURL into json: %+v", &shortURL)
 	response, err := json.Marshal(&shortURL)
 	if err != nil {
-		log.Fatalf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
+		log.Warnf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -177,7 +165,7 @@ func (a *App) getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
 	// normalize url for insert
 	url, err = purell.NormalizeURLString(url, purell.FlagsUsuallySafeNonGreedy)
 	if err != nil {
-		log.Fatalf("error normalizing url: %v", err)
+		log.Warnf("error normalizing url: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
@@ -188,7 +176,7 @@ func (a *App) getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
 		"UPDATE links SET unique_visits = unique_visits + 1 WHERE url = $1 RETURNING url, short_url;",
 		url).Scan(&shortURL.URL, &shortURL.ShortURL)
 	if err != nil {
-		log.Fatalf("failed to get short_url given {url: %s} from database: %v\n", url, err)
+		log.Warnf("failed to get short_url given {url: %s} from database: %v\n", url, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
@@ -196,7 +184,7 @@ func (a *App) getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
 	log.Infof("marshalling shortURL into json: %+v", &shortURL)
 	response, err := json.Marshal(&shortURL)
 	if err != nil {
-		log.Fatalf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
+		log.Warnf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
