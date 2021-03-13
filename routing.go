@@ -98,7 +98,7 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 		shortLink).Scan(&shortURL.URL, &shortURL.ShortURL)
 	if err != nil {
 		log.Warnf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
-		http.Error(w, "", http.StatusNotFound)
+		http.Error(w, "short_url not found", http.StatusNotFound)
 		return
 	}
 
@@ -137,7 +137,7 @@ func (a *App) getURLInfoGivenShortURL(w http.ResponseWriter, r *http.Request) {
 		shortLink).Scan(&shortURL.URL, &shortURL.ShortURL, &shortURL.CreatedAt, &shortURL.LastAccessed, &shortURL.UniqueVisits)
 	if err != nil {
 		log.Warnf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
-		http.Error(w, "", http.StatusNotFound)
+		http.Error(w, "short_url not found", http.StatusNotFound)
 		return
 	}
 
@@ -177,7 +177,7 @@ func (a *App) getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
 		url).Scan(&shortURL.URL, &shortURL.ShortURL)
 	if err != nil {
 		log.Warnf("failed to get short_url given {url: %s} from database: %v\n", url, err)
-		http.Error(w, "", http.StatusNotFound)
+		http.Error(w, "url not found", http.StatusNotFound)
 	}
 
 	// build response
@@ -194,7 +194,6 @@ func (a *App) getShortURLGivenURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), status)
 	}
-
 }
 
 func (a *App) baseHandler(w http.ResponseWriter, r *http.Request) {
