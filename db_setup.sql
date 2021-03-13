@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE links (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v1(),
-    url text UNIQUE NOT NULL,
+    url text NOT NULL,
     short_url varchar (16) UNIQUE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     last_accessed TIMESTAMPTZ NOT NULL DEFAULT NOW(),
