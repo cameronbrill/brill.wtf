@@ -25,6 +25,7 @@ var (
 	DB_USER        string
 	DB_PASSWORD    string
 	DB_NAME        string
+	DATABASE_URL   string
 	REDIS_PORT     int
 	REDIS_HOST     string
 	REDIS_PASSWORD string
@@ -49,6 +50,7 @@ func (a *App) initEnvVars() {
 	if err != nil {
 		log.Fatalf("port %v cannot be parsed\n", DB_PORT)
 	}
+	DATABASE_URL = getEnv("DATABASE_URL", "")
 	REDIS_HOST = getEnv("REDIS_HOST", "localhost")
 	REDIS_PASSWORD = getEnv("REDIS_PASSWORD", "")
 	REDIS_PORT, err = strconv.Atoi(getEnv("REDIS_PORT", "6379"))
@@ -63,12 +65,19 @@ func (a *App) initEnvVars() {
 
 func (a *App) setupDB() {
 	log.Infof("setting up database")
-	// Connect to postgres
-	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable", DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
 	var err error
-	a.DB, err = sql.Open("postgres", psqlInfo)
-	if err != nil {
-		log.Fatalf("connection to database failed: %v\n", err)
+	// Connect to postgres
+	if DATABASE_URL != "" {
+		a.DB, err = sql.Open("postgres", DATABASE_URL)
+		if err != nil {
+			log.Fatalf("connection to database failed: %v\n", err)
+		}
+	} else {
+		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable", DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+		a.DB, err = sql.Open("postgres", psqlInfo)
+		if err != nil {
+			log.Fatalf("connection to database failed: %v\n", err)
+		}
 	}
 
 	// Testing postgres connection
