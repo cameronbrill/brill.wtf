@@ -29,7 +29,7 @@ var (
 	REDIS_HOST     string
 	REDIS_PASSWORD string
 	API_PORT       int
-	IS_HEROKU      string
+	SSL_MODE       string
 )
 
 func getEnv(key, fallback string) string {
@@ -60,19 +60,18 @@ func (a *App) initEnvVars() {
 	if err != nil {
 		log.Fatalf("port %v cannot be parsed\n", API_PORT)
 	}
-	IS_HEROKU = getEnv("IS_HEROKU", "")
+	if getEnv("IS_HEROKU", "") != "" {
+		SSL_MODE = "require"
+	} else {
+		SSL_MODE = "disable"
+	}
 }
 
 func (a *App) setupDB() {
 	log.Infof("setting up database")
 	var err error
 	// Connect to postgres
-	var psqlInfo string
-	if IS_HEROKU == "" {
-		psqlInfo = fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable", DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
-	} else {
-		psqlInfo = fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=enable", DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
-	}
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=%s", DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME, SSL_MODE)
 	a.DB, err = sql.Open("postgres", psqlInfo)
 	if err != nil {
 		log.Fatalf("connection to database failed: %v\n", err)
