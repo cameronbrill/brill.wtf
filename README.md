@@ -24,8 +24,8 @@ doppler run -- air
 - [x] Add [postgres](https://github.com/lib/pq) to store everything
 - [ ] IP rate limiting
 - [ ] Create makefile for build/local running configs
-- [ ] Create [docker compose](https://docs.docker.com/compose/) setup for local dev
-<strike> - [ ] Setup kubernetes config and deploy to [GKE](https://cloud.google.com/kubernetes-engine)</strike>
+- [x] Create [docker compose](https://docs.docker.com/compose/) setup for local dev<br />
+<strike> Setup kubernetes config and deploy to [GKE](https://cloud.google.com/kubernetes-engine)</strike>
 - [ ] Create a frontend for submitting links
 - [x] [Normalize](https://github.com/PuerkitoBio/purell) urls so you don't get repeats
 - [x] Allow custom short-links for my friends (ex. brill.wtf/minecraft)
