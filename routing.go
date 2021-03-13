@@ -20,18 +20,21 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Infof("creating short_url: {url: %v}{short_url: %v}", shortURLReq.URL, shortURLReq.ShortURL)
-	//defer func() {
-	//	err = r.Body.Close()
-	//	if err != nil {
-	//		log.Fatalf("issue closing request body in createShortLink: %v", err)
-	//	}
-	//}()
+	defer func() {
+		err = r.Body.Close()
+		if err != nil {
+			log.Fatalf("issue closing request body in createShortLink: %v", err)
+		}
+	}()
 
 	// normalize url for insert
 	shortURLReq.URL, err = purell.NormalizeURLString(shortURLReq.URL, purell.FlagsUsuallySafeNonGreedy)
 	if err != nil {
 		log.Fatalf("error normalizing url: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	// insert into postgres
@@ -58,7 +61,11 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("error marshalling response object: {err: %v}", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	status, err := w.Write(response)
@@ -96,6 +103,8 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("failed to get url given {short_url: %s} from database: %v\n", shortLink, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -105,6 +114,8 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatalf("failed to marshal database response into json: shortURL: %+v\nresponse:%+v\nerr:%v", shortURL, response, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
