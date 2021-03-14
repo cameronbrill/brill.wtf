@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/PuerkitoBio/purell"
 	"github.com/go-redis/redis/v8"
@@ -49,7 +50,7 @@ func (a *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	// insert into redis
 	ctx := r.Context()
 	log.Infof("setting short_url to url in redis: {short_url: %s} {url: %s}", shortURLReq.ShortURL, shortURLReq.URL)
-	err = a.RDB.Set(ctx, shortURLReq.ShortURL, shortURLReq.URL, 0).Err()
+	err = a.RDB.Set(ctx, shortURLReq.ShortURL, shortURLReq.URL, 730*time.Hour).Err()
 	if err != nil {
 		log.Warnf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURLReq.ShortURL, shortURLReq.URL, err)
 	}
@@ -113,7 +114,7 @@ func (a *App) getURLGivenShortURL(w http.ResponseWriter, r *http.Request) {
 
 	// set short_url in redis
 	log.Infof("setting short_url to url in redis: {short_url: %s} {url: %s}", shortURL.ShortURL, shortURL.URL)
-	err = a.RDB.Set(ctx, shortURL.ShortURL, shortURL.URL, 0).Err()
+	err = a.RDB.Set(ctx, shortURL.ShortURL, shortURL.URL, 730*time.Hour).Err()
 	if err != nil {
 		log.Warnf("failed to set short_url:url in redis: {short_url: %s} {url: %s} {err: %v}", shortURL.ShortURL, shortURL.URL, err)
 	}
