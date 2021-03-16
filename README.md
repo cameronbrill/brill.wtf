@@ -22,7 +22,7 @@ doppler run -- air
 - [x] Finalize the schema before getting tons built out
 - [x] Add [redis](https://github.com/go-redis/redis) for local short-link caching
 - [x] Add [postgres](https://github.com/lib/pq) to store everything
-- [ ] IP rate limiting
+- [x] IP rate limiting
 - [ ] Create makefile for build/local running configs
 - [x] Create [docker compose](https://docs.docker.com/compose/) setup for local dev<br />
 <strike> Setup kubernetes config and deploy to [GKE](https://cloud.google.com/kubernetes-engine)</strike>

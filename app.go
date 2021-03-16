@@ -7,6 +7,9 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/throttled/throttled/v2"
+	"github.com/throttled/throttled/v2/store/memstore"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -14,9 +17,10 @@ import (
 )
 
 type App struct {
-	Router *mux.Router
-	DB     *sql.DB
-	RDB    *redis.Client
+	Router      *mux.Router
+	DB          *sql.DB
+	RDB         *redis.Client
+	RateLimiter *throttled.HTTPRateLimiter
 }
 
 var (
@@ -93,6 +97,24 @@ func (a *App) setupRedisClient() {
 	})
 }
 
+func (a *App) setupRateLimiter() {
+	store, err := memstore.New(65536)
+	if err != nil {
+		log.Fatalf("failed to initialize memstore: %v", err)
+	}
+
+	quota := throttled.RateQuota{MaxRate: throttled.PerMin(10), MaxBurst: 5}
+	rateLimiter, err := throttled.NewGCRARateLimiter(store, quota)
+	if err != nil {
+		log.Fatalf("failed to initialize GCRA rate limiter: %v", err)
+	}
+
+	a.RateLimiter = &throttled.HTTPRateLimiter{
+		RateLimiter: rateLimiter,
+		VaryBy:      &throttled.VaryBy{RemoteAddr: true},
+	}
+}
+
 func (a *App) setupRouter() {
 	log.Infof("setting up router")
 	a.Router = mux.NewRouter().StrictSlash(true)
@@ -105,12 +127,13 @@ func (a *App) setupRouter() {
 
 	a.Router.Use(suffixMiddleware)
 
-	http.Handle("/", a.Router)
+	http.Handle("/", a.RateLimiter.RateLimit(a.Router))
 }
 
 func (a *App) SetupApp() {
 	a.initEnvVars()
 	a.setupDB()
+	a.setupRateLimiter()
 	a.setupRouter()
 	a.setupRedisClient()
 }
