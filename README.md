@@ -33,7 +33,7 @@ doppler run -- air
 - [ ] Generate 6-letter readable short-links with a [word bank](https://github.com/dwyl/english-words) (ex. brill.wtf/potato)
 - [x] Store secrets in [doppler](https://doppler.com) for easy user adoption
 - [x] Create [air](https://github.com/cosmtrek/air) config for easy local dev
-- [ ] Add [Datadog](https://www.datadoghq.com) for logging/monitoring
+- [x] Add [Datadog](https://www.datadoghq.com) for logging/monitoring
 - [x] Add [pre-commit](https://pre-commit.com/) hooks
 - [x] Migrate to [heroku](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml#run-defining-the-processes-to-run)
 - [ ] Ads????
