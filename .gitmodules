@@ -1,9 +1,9 @@
-[submodule "brill.wtf.go"]
-	path = brill.wtf.go
-	url = git@github.com:cameronbrill/brill.wtf.go.git
-[submodule "brill.wtf.ts"]
-	path = brill.wtf.ts
-	url = git@github.com:cameronbrill/brill.wtf.ts.git
 [submodule "brill.wtf.rs"]
 	path = brill.wtf.rs
 	url = git@github.com:cameronbrill/brill.wtf.rs.git
+[submodule "brill.wtf.ts"]
+	path = brill.wtf.ts
+	url = git@github.com:cameronbrill/brill.wtf.ts.git
+[submodule "brill.wtf.go"]
+	path = brill.wtf.go
+	url = git@github.com:cameronbrill/brill.wtf.go.git
