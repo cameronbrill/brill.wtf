@@ -7,7 +7,8 @@
   "author": "Cameron Brill <c00brill@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "s": "yarn deps && yarn start",
+    "s": "yarn submodule:update && yarn deps && yarn start",
+    "submodule:update": "concurrently \"cd brill.wtf.ts && git pull\" \"cd brill.wtf.go && git pull\"",
     "start": "concurrently --kill-others \"yarn:start:*\"",
     "deps": "concurrently \"yarn:deps:*\"",
     "start:backend": "cd brill.wtf.go && air",
