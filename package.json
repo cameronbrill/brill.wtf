@@ -1,0 +1,21 @@
+{
+  "name": "brill.wtf",
+  "version": "1.0.0",
+  "description": "cameron brill's url shortener",
+  "main": "index.js",
+  "repository": "git@github.com:cameronbrill/brill.wtf.git",
+  "author": "Cameron Brill <c00brill@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "s": "yarn deps && yarn start",
+    "start": "concurrently --kill-others \"yarn:start:*\"",
+    "deps": "concurrently \"yarn:deps:*\"",
+    "start:backend": "cd brill.wtf.go && air",
+    "deps:backend": "cd brill.wtf.go && make deps",
+    "start:frontend": "cd brill.wtf.ts && yarn dev",
+    "deps:backend": "cd brill.wtf.ts && yarn"
+  },
+  "devDependencies": {
+    "concurrently": "^7.2.0"
+  }
+}

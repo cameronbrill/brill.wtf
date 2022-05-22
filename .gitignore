@@ -53,3 +53,5 @@ _testmain.go
 
 .idea
 *.rdb
+
+**/node_modules
